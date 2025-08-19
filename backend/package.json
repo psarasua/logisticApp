@@ -1,0 +1,17 @@
+{
+  "name": "logistica-backend",
+  "version": "1.0.0",
+  "description": "Backend API para la aplicación de logística",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "hono": "^3.11.0",
+    "@hono/node-server": "^1.6.0",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5"
+  },
+  "type": "module"
+}
