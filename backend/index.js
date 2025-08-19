@@ -13,19 +13,157 @@ const pool = new Pool({
 
 const app = new Hono()
 
-// Middleware CORS
+// Middleware CORS mejorado
 app.use('/*', cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:5173',
+    'https://mapaclientes.uy',
+    'https://www.mapaclientes.uy',
+    'https://logistic-app-alpha.vercel.app'
+  ],
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }))
 
-// Health check
-app.get('/api/health', (c) => {
+// ==================== HEALTH CHECK ENDPOINTS ====================
+
+// Ping endpoint básico
+app.get('/api/ping', (c) => {
   return c.json({ 
-    status: 'ok', 
-    message: 'Logística API funcionando correctamente',
-    timestamp: new Date().toISOString()
+    message: 'pong', 
+    timestamp: new Date().toISOString() 
   })
+})
+
+// Health check completo con verificación de BD
+app.get('/api/health', async (c) => {
+  const startTime = Date.now()
+  
+  try {
+    // Verificar conexión a base de datos
+    let dbStatus = 'connected'
+    let dbError = null
+    let dbResponseTime = null
+    let serverTime = null
+    
+    try {
+      const dbStart = Date.now()
+      const result = await pool.query('SELECT NOW() as server_time, version() as postgres_version')
+      dbResponseTime = Date.now() - dbStart
+      serverTime = result.rows[0]?.server_time
+      
+      // Verificar que tenemos tablas principales
+      const tablesResult = await pool.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('clientes', 'camiones', 'rutas', 'repartos')
+      `)
+      
+      const tables = tablesResult.rows.map(row => row.table_name)
+      const expectedTables = ['clientes', 'camiones', 'rutas', 'repartos']
+      const missingTables = expectedTables.filter(table => !tables.includes(table))
+      
+      if (missingTables.length > 0) {
+        dbStatus = 'warning'
+        dbError = `Tablas faltantes: ${missingTables.join(', ')}`
+      }
+      
+    } catch (error) {
+      dbStatus = 'disconnected'
+      dbError = error.message
+    }
+
+    const totalResponseTime = Date.now() - startTime
+
+    return c.json({
+      status: dbStatus === 'disconnected' ? 'error' : 'ok',
+      timestamp: new Date().toISOString(),
+      responseTime: `${totalResponseTime}ms`,
+      services: {
+        api: 'connected',
+        database: dbStatus,
+        ...(dbError && { database_error: dbError })
+      },
+      database: {
+        status: dbStatus,
+        responseTime: dbResponseTime ? `${dbResponseTime}ms` : null,
+        serverTime: serverTime,
+        ...(dbError && { error: dbError })
+      },
+      server: {
+        uptime: `${Math.floor(process.uptime())}s`,
+        memory: {
+          used: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+          total: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`
+        },
+        env: process.env.NODE_ENV || 'development',
+        node_version: process.version
+      }
+    })
+    
+  } catch (error) {
+    const totalResponseTime = Date.now() - startTime
+    
+    return c.json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      responseTime: `${totalResponseTime}ms`,
+      services: {
+        api: 'connected',
+        database: 'disconnected',
+        error: error.message
+      },
+      server: {
+        uptime: `${Math.floor(process.uptime())}s`,
+        env: process.env.NODE_ENV || 'development'
+      }
+    }, 500)
+  }
+})
+
+// Status endpoint con estadísticas del sistema
+app.get('/api/status', async (c) => {
+  try {
+    // Obtener estadísticas básicas de la BD
+    const stats = await Promise.allSettled([
+      pool.query('SELECT COUNT(*) as total FROM clientes'),
+      pool.query('SELECT COUNT(*) as total FROM camiones'),
+      pool.query('SELECT COUNT(*) as total FROM rutas'),
+      pool.query('SELECT COUNT(*) as total FROM repartos')
+    ])
+
+    const clientesCount = stats[0].status === 'fulfilled' ? stats[0].value.rows[0]?.total || 0 : 0
+    const camionesCount = stats[1].status === 'fulfilled' ? stats[1].value.rows[0]?.total || 0 : 0
+    const rutasCount = stats[2].status === 'fulfilled' ? stats[2].value.rows[0]?.total || 0 : 0
+    const repartosCount = stats[3].status === 'fulfilled' ? stats[3].value.rows[0]?.total || 0 : 0
+
+    return c.json({
+      status: 'healthy',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      uptime: `${Math.floor(process.uptime())}s`,
+      domain: 'mapaclientes.uy',
+      statistics: {
+        clientes: parseInt(clientesCount),
+        camiones: parseInt(camionesCount),
+        rutas: parseInt(rutasCount),
+        repartos: parseInt(repartosCount),
+        total_records: parseInt(clientesCount) + parseInt(camionesCount) + parseInt(rutasCount) + parseInt(repartosCount)
+      }
+    })
+    
+  } catch (error) {
+    return c.json({
+      status: 'degraded',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      uptime: `${Math.floor(process.uptime())}s`,
+      error: 'No se pudieron obtener estadísticas de la base de datos'
+    }, 200) // 200 porque el servicio sigue funcionando
+  }
 })
 
 // ==================== CLIENTES ====================
@@ -234,6 +372,7 @@ app.onError((err, c) => {
 const port = process.env.PORT || 3001
 console.log(`🚀 Servidor corriendo en puerto ${port}`)
 console.log(`📡 API disponible en http://localhost:${port}/api`)
+console.log(`❤️ Health check: http://localhost:${port}/api/health`)
 
 serve({
   fetch: app.fetch,
