@@ -1,7 +1,7 @@
+// src/components/Layout/Layout.jsx (REEMPLAZAR COMPLETAMENTE)
 import React, { useState } from 'react'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
-import BottomNavigation from './BottomNavigation'
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -11,45 +11,38 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="d-flex vh-100">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      
       {/* Desktop Sidebar */}
-      <div className="d-none d-lg-block">
+      <div className="hidden lg:flex lg:flex-shrink-0">
         <Sidebar />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div className="d-lg-none">
+        <div className="lg:hidden">
           <div 
-            className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50" 
-            style={{ zIndex: 1040 }}
+            className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40"
             onClick={() => setSidebarOpen(false)}
           />
-          <div 
-            className="position-fixed top-0 start-0 h-100 bg-white shadow-lg" 
-            style={{ width: '280px', zIndex: 1050 }}
-          >
+          <div className="fixed inset-y-0 left-0 z-50 bg-white shadow-xl">
             <Sidebar mobile onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div className="flex-fill d-flex flex-column overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden">
+        
         {/* Top Navbar */}
         <Navbar onToggleSidebar={toggleSidebar} />
 
         {/* Main Content */}
-        <main className="flex-fill overflow-auto">
-          <div className="container-fluid p-3 pb-5 pb-lg-3">
+        <main className="flex-1 overflow-y-auto focus:outline-none">
+          <div className="py-6">
             {children}
           </div>
         </main>
-
-        {/* Mobile Bottom Navigation */}
-        <div className="d-lg-none">
-          <BottomNavigation />
-        </div>
       </div>
     </div>
   )
