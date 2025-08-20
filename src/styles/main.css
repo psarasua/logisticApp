@@ -472,3 +472,74 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
 }
+/* ==========================================
+   TAILWIND CSS - NUEVA GENERACIÓN
+   ========================================== */
+
+   @import 'tailwindcss/base';
+   @import 'tailwindcss/components'; 
+   @import 'tailwindcss/utilities';
+   
+   /* Fuente Inter para componentes nuevos */
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+   
+   /* Componentes Tailwind personalizados para nuevos elementos */
+   @layer components {
+     /* Botones modernos Tailwind (para componentes nuevos) */
+     .btn-modern-primary {
+       @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-sm hover:shadow-md;
+     }
+     
+     .btn-modern-secondary {
+       @apply bg-white hover:bg-neutral-50 text-neutral-700 font-medium py-3 px-6 rounded-lg border border-neutral-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-sm hover:shadow-md;
+     }
+     
+     /* Cards modernas Tailwind */
+     .card-modern {
+       @apply bg-white rounded-xl shadow-lg border border-neutral-200/80 hover:shadow-xl transition-all duration-200;
+     }
+     
+     /* Login moderno */
+     .login-container {
+       @apply min-h-screen flex items-center justify-center;
+       background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+     }
+     
+     .login-card {
+       @apply bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade-in;
+     }
+     
+     .login-header {
+       @apply text-center mb-8;
+     }
+     
+     .login-logo {
+       @apply w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4;
+     }
+     
+     .input-modern {
+       @apply w-full px-4 py-3.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 placeholder-neutral-400 font-medium;
+     }
+   }
+   
+   /* Utilidades adicionales */
+   @layer utilities {
+     .gradient-modern {
+       background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+     }
+     
+     .animate-fade-in {
+       animation: modernFadeIn 0.6s ease-out;
+     }
+   }
+   
+   @keyframes modernFadeIn {
+     from {
+       opacity: 0;
+       transform: translateY(20px) scale(0.95);
+     }
+     to {
+       opacity: 1;
+       transform: translateY(0) scale(1);
+     }
+   }
