@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import SystemHealthCheck from './components/SystemHealthCheck';
+import Dashboard from './components/Dashboard/Dashboard';
 
 function App() {
   const [systemReady, setSystemReady] = useState(false);
   const [showHealthCheck, setShowHealthCheck] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginData, setLoginData] = useState({ username: 'admin', password: 'admin' });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,8 +25,7 @@ function App() {
     // Simular login
     setTimeout(() => {
       setIsLoading(false);
-      // Aquí irías a tu dashboard
-      alert('Login exitoso! Redirigiendo...');
+      setIsAuthenticated(true);
     }, 1500);
   };
 
@@ -35,8 +36,16 @@ function App() {
     });
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   if (showHealthCheck) {
     return <SystemHealthCheck onHealthCheckComplete={handleHealthCheckComplete} />;
+  }
+
+  if (isAuthenticated) {
+    return <Dashboard onLogout={handleLogout} />;
   }
 
   return (

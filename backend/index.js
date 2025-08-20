@@ -309,54 +309,69 @@ app.post('/api/rutas', async (c) => {
   }
 })
 
+
 // ==================== REPARTOS ====================
 app.get('/api/repartos', async (c) => {
   try {
-    const result = await pool.query('SELECT * FROM repartos ORDER BY fecha DESC, id')
-    return c.json(result.rows)
+    console.log('🔍 Debug: Iniciando /api/repartos')
+    
+    // Test 1: Conexión a BD
+    const testConnection = await pool.query('SELECT NOW() as tiempo')
+    console.log('✅ Conexión BD OK:', testConnection.rows[0]?.tiempo)
+    
+    // Test 2: Verificar si tabla existe
+    const tableExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'repartos'
+      ) as exists
+    `)
+    console.log('✅ Tabla repartos existe:', tableExists.rows[0]?.exists)
+    
+    // Test 3: Query simple
+    const count = await pool.query('SELECT COUNT(*) as total FROM repartos')
+    console.log('✅ Total registros:', count.rows[0]?.total)
+    
+    // Test 4: Primeros 3 registros sin transformaciones
+    const simple = await pool.query('SELECT * FROM repartos LIMIT 3')
+    console.log('✅ Datos raw:', simple.rows)
+    
+    // Test 5: Solo campos básicos mapeados
+    const mapped = await pool.query(`
+      SELECT 
+        id,
+        cliente_id as cliente,
+        camion_id as camion,
+        fechaentrega as fecha,
+        fechaentrega as "fechaCreacion",
+        estado,
+        'Dirección temporal' as direccion
+      FROM repartos 
+      LIMIT 5
+    `)
+    
+    console.log('✅ Query exitosa, devolviendo', mapped.rows.length, 'registros')
+    return c.json(mapped.rows)
+    
   } catch (error) {
-    console.error('Error obteniendo repartos:', error)
-    return c.json({ message: 'Error interno del servidor' }, 500)
+    console.error('❌ ERROR DETALLADO:')
+    console.error('- Message:', error.message)
+    console.error('- Code:', error.code)
+    console.error('- Detail:', error.detail)
+    console.error('- Stack:', error.stack)
+    
+    return c.json({ 
+      message: 'Error interno del servidor',
+      debug: {
+        error: error.message,
+        code: error.code,
+        detail: error.detail,
+        timestamp: new Date().toISOString()
+      }
+    }, 500)
   }
 })
 
-app.post('/api/repartos', async (c) => {
-  try {
-    const data = await c.req.json()
-    const { cliente, direccion, fecha, camion, ruta, estado, descripcion } = data
-
-    const result = await pool.query(
-      'INSERT INTO repartos (cliente, direccion, fecha, camion, ruta, estado, descripcion) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [cliente, direccion, fecha, camion, ruta, estado || 'pendiente', descripcion]
-    )
-
-    return c.json(result.rows[0], 201)
-  } catch (error) {
-    console.error('Error creando reparto:', error)
-    return c.json({ message: 'Error creando reparto' }, 500)
-  }
-})
-
-app.patch('/api/repartos/:id/status', async (c) => {
-  try {
-    const id = c.req.param('id')
-    const { estado } = await c.req.json()
-
-    const result = await pool.query(
-      'UPDATE repartos SET estado = $1, fecha_actualizacion = NOW() WHERE id = $2 RETURNING *',
-      [estado, id]
-    )
-
-    if (result.rows.length === 0) {
-      return c.json({ message: 'Reparto no encontrado' }, 404)
-    }
-
-    return c.json(result.rows[0])
-  } catch (error) {
-    console.error('Error actualizando estado del reparto:', error)
-    return c.json({ message: 'Error actualizando estado' }, 500)
-  }
-})
 
 // Middleware de error 404
 app.notFound((c) => {
