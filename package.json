@@ -21,7 +21,8 @@
     "zustand": "^4.4.6",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.17.0",
-    "axios": "^1.5.1"
+    "axios": "^1.5.1",
+    "lucide-react": "^0.263.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
