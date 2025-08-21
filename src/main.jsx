@@ -2,8 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import App from './App.jsx'     // ← Bootstrap PRIMERO
-import './index.css'              // ← Tailwind DESPUÉS (gana)
+import App from './App.jsx'
+import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -12,16 +12,23 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Toaster 
         position="top-right"
         toastOptions={{
-          duration: 3000,
+          duration: 4000,
           style: {
             background: '#363636',
             color: '#fff',
           },
           success: {
             duration: 3000,
-            theme: {
-              primary: 'green',
-              secondary: 'black',
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
             },
           },
         }}

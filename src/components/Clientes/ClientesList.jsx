@@ -55,208 +55,169 @@ const ClientesList = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="mb-1">Clientes</h2>
-          <p className="text-muted mb-0">
+          <h2 className="text-2xl font-bold text-gray-900">Clientes</h2>
+          <p className="text-gray-600">
             Gestión de clientes - {filteredClientes.length} cliente{filteredClientes.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button 
-          className="btn btn-primary"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           onClick={() => setShowForm(true)}
         >
-          <i className="bi bi-plus-circle me-2"></i>
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
           Nuevo Cliente
         </button>
       </div>
 
       {/* Search and Filters */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-6">
-              <div className="input-group">
-                <span className="input-group-text">
-                  <i className="bi bi-search"></i>
-                </span>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Buscar por nombre, email, teléfono o dirección..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Buscar por nombre, email, teléfono o dirección..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <div className="col-md-3">
-              <select className="form-select">
-                <option value="">Todos los estados</option>
-                <option value="activo">Activos</option>
-                <option value="inactivo">Inactivos</option>
-              </select>
-            </div>
-            <div className="col-md-3">
-              <div className="btn-group w-100" role="group">
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name="viewMode"
-                  id="gridView"
-                  checked={viewMode === 'grid'}
-                  onChange={() => setViewMode('grid')}
-                />
-                <label className="btn btn-outline-secondary" htmlFor="gridView">
-                  <i className="bi bi-grid-3x3-gap"></i>
-                </label>
-
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name="viewMode"
-                  id="listView"
-                  checked={viewMode === 'list'}
-                  onChange={() => setViewMode('list')}
-                />
-                <label className="btn btn-outline-secondary" htmlFor="listView">
-                  <i className="bi bi-list-ul"></i>
-                </label>
-              </div>
-            </div>
+          </div>
+          <div>
+            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-4">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 rounded-lg transition-colors ${
+              viewMode === 'grid' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded-lg transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+        
+        {loading && (
+          <div className="flex items-center text-gray-500">
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Cargando...
           </div>
-          <p className="mt-2 text-muted">Cargando clientes...</p>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Empty State */}
-      {!loading && filteredClientes.length === 0 && (
-        <div className="text-center py-5">
-          <i className="bi bi-people fs-1 text-muted"></i>
-          <h4 className="mt-3 text-muted">
-            {searchTerm ? 'No se encontraron clientes' : 'No hay clientes registrados'}
-          </h4>
-          <p className="text-muted">
-            {searchTerm 
-              ? `No hay clientes que coincidan con "${searchTerm}"`
-              : 'Comienza agregando tu primer cliente'
-            }
-          </p>
-          {!searchTerm && (
-            <button 
-              className="btn btn-primary mt-2"
-              onClick={() => setShowForm(true)}
-            >
-              <i className="bi bi-plus-circle me-2"></i>
-              Agregar Primer Cliente
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Grid View */}
-      {!loading && viewMode === 'grid' && filteredClientes.length > 0 && (
-        <div className="row g-4">
-          {filteredClientes.map((cliente) => (
-            <div key={cliente.id} className="col-sm-6 col-lg-4">
+      {/* Clientes Grid/List */}
+      {filteredClientes.length > 0 ? (
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClientes.map((cliente) => (
               <ClienteCard
+                key={cliente.id}
                 cliente={cliente}
-                onEdit={() => handleEdit(cliente)}
-                onDelete={() => handleDelete(cliente.id)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* List View */}
-      {!loading && viewMode === 'list' && filteredClientes.length > 0 && (
-        <div className="card">
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Cliente</th>
-                  <th>Contacto</th>
-                  <th>Dirección</th>
-                  <th>Estado</th>
-                  <th>Última actividad</th>
-                  <th width="120">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClientes.map((cliente) => (
-                  <tr key={cliente.id}>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <div 
-                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                          style={{ width: '40px', height: '40px', fontSize: '16px' }}
-                        >
-                          {cliente.nombre?.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="fw-medium">{cliente.nombre}</div>
-                          <small className="text-muted">ID: {cliente.id}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div>
-                        <div>{cliente.telefono}</div>
-                        <small className="text-muted">{cliente.email}</small>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-truncate" style={{ maxWidth: '200px' }}>
-                        {cliente.direccion}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`badge ${
-                        cliente.estado === 'activo' ? 'bg-success' : 'bg-secondary'
-                      }`}>
-                        {cliente.estado || 'activo'}
-                      </span>
-                    </td>
-                    <td>
-                      <small className="text-muted">
-                        {cliente.ultimaActividad || 'No registrada'}
-                      </small>
-                    </td>
-                    <td>
-                      <div className="btn-group btn-group-sm">
-                        <button
-                          className="btn btn-outline-primary"
-                          onClick={() => handleEdit(cliente)}
-                          title="Editar cliente"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-danger"
-                          onClick={() => handleDelete(cliente.id)}
-                          title="Eliminar cliente"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            ))}
           </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredClientes.map((cliente) => (
+                    <tr key={cliente.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{cliente.nombre}</div>
+                          <div className="text-sm text-gray-500">{cliente.direccion}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm text-gray-900">{cliente.email}</div>
+                          <div className="text-sm text-gray-500">{cliente.telefono}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          cliente.estado === 'activo' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {cliente.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => handleEdit(cliente)}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(cliente.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      ) : (
+        <div className="text-center py-12">
+          <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <p className="text-gray-500">No se encontraron clientes</p>
         </div>
       )}
     </div>
