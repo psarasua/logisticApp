@@ -40,6 +40,19 @@ try {
 
 const app = new Hono()
 
+// Middleware CORS preflight (AGREGAR ANTES de securityHeaders)
+app.use('*', async (c, next) => {
+  // CORS preflight para OPTIONS
+  if (c.req.method === 'OPTIONS') {
+    c.header('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGINS || 'https://www.mapaclientes.uy');
+    c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    c.header('Access-Control-Allow-Credentials', 'true');
+    return c.json({}, 200);
+  }
+  await next();
+});
+
 // Importar middleware de seguridad
 import { securityHeaders } from './src/middleware/security.js'
 import { generalRateLimiter } from './src/middleware/rateLimiter.js'

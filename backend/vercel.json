@@ -8,7 +8,24 @@
   ],
   "routes": [
     {
-      "src": "/api",
+      "src": "/api/(.*)",
+      "methods": ["OPTIONS"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/auth/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/health/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/clientes/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/camiones/(.*)",
       "dest": "/index.js"
     },
     {
@@ -23,9 +40,27 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "index.js": {
-      "maxDuration": 30
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://www.mapaclientes.uy"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        }
+      ]
     }
-  }
+  ]
 }
