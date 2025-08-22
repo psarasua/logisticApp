@@ -1,17 +1,23 @@
 {
   "name": "logistica-backend",
-  "version": "1.0.0",
-  "description": "Backend API para la aplicación de logística",
+  "version": "2.0.0",
+  "description": "Backend API para la aplicación de logística - Refactorizado con Hono",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "hono": "^4.0.0",
     "@hono/node-server": "^1.6.0",
     "pg": "^8.11.3",
-    "cors": "^2.8.5"
+    "joi": "^17.11.0",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   },
   "type": "module"
 }
