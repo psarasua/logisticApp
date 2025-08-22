@@ -8,7 +8,19 @@
   ],
   "routes": [
     {
-      "src": "/api",
+      "src": "/api/auth/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/health/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/clientes/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/api/camiones/(.*)",
       "dest": "/index.js"
     },
     {
@@ -22,10 +34,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "index.js": {
-      "maxDuration": 30
-    }
   }
 }
