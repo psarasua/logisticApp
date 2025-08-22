@@ -76,5 +76,24 @@ export const schemas = {
     camionId: Joi.number().integer().positive().required(),
     fechaEntrega: Joi.date().iso().required(),
     estado: Joi.string().valid('pendiente', 'en_camino', 'entregado', 'cancelado').default('pendiente')
+  }),
+
+  // Nuevos esquemas de autenticación
+  login: Joi.object({
+    username: Joi.string().min(3).max(50).required(),
+    password: Joi.string().min(8).required()
+  }),
+
+  register: Joi.object({
+    username: Joi.string().min(3).max(50).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required()
+      .messages({
+        'string.pattern.base': 'La contraseña debe contener al menos una minúscula, una mayúscula y un número'
+      }),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required()
+      .messages({
+        'any.only': 'Las contraseñas no coinciden'
+      })
   })
 }

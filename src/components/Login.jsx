@@ -16,20 +16,12 @@ const Login = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      // Simular login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Login exitoso
-      login({
-        username: formData.username,
-        token: 'fake-jwt-token',
-        role: 'admin'
-      });
-      
+      await login(formData);
       toast.success('¡Bienvenido!');
       onLoginSuccess();
     } catch (error) {
-      toast.error('Error en el login');
+      const message = error.response?.data?.message || 'Error en el login';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -98,7 +90,7 @@ const Login = ({ onLoginSuccess }) => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Usuario demo: <span className="font-medium text-blue-600">admin</span> / Contraseña: <span className="font-medium text-blue-600">admin</span>
+            Usuario demo: <span className="font-medium text-blue-600">admin</span> / Contraseña: <span className="font-medium text-blue-600">Admin123!</span>
           </p>
         </div>
       </div>

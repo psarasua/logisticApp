@@ -23,17 +23,30 @@ console.log('PORT:', process.env.PORT)
 import { logger } from './src/utils/logger.js'
 import { AppError } from './src/utils/errors.js'
 import { db } from './src/config/database.js'
+import { runMigrations } from './src/config/migrations.js'
 
 // INICIALIZAR la base de datos DESPUÉS de cargar las variables
 try {
   db.init()
   console.log('✅ Base de datos inicializada correctamente')
+  
+  // Ejecutar migraciones
+  await runMigrations()
+  console.log('✅ Migraciones ejecutadas correctamente')
 } catch (error) {
   console.error('❌ Error inicializando base de datos:', error.message)
   process.exit(1)
 }
 
 const app = new Hono()
+
+// Importar middleware de seguridad
+import { securityHeaders } from './src/middleware/security.js'
+import { generalRateLimiter } from './src/middleware/rateLimiter.js'
+
+// Middleware de seguridad global
+app.use('*', securityHeaders)
+app.use('*', generalRateLimiter)
 
 // Middleware de logging
 app.use('*', async (c, next) => {
@@ -53,8 +66,12 @@ app.use('*', async (c, next) => {
 import healthRoutes from './src/routes/healthRoutes.js'
 import clienteRoutes from './src/routes/clienteRoutes.js'
 import camionRoutes from './src/routes/camionRoutes.js'
+import authRoutes from './src/auth/authRoutes.js'
 
-// Registrar rutas
+// Registrar rutas de autenticación
+app.route('/api/auth', authRoutes)
+
+// Registrar rutas existentes
 app.route('/api/health', healthRoutes)
 app.route('/api/clientes', clienteRoutes)
 app.route('/api/camiones', camionRoutes)
@@ -67,6 +84,7 @@ app.get('/api', (c) => {
     status: 'running',
     timestamp: new Date().toISOString(),
     endpoints: {
+      auth: '/api/auth',
       health: '/api/health',
       clientes: '/api/clientes',
       camiones: '/api/camiones',
@@ -107,8 +125,9 @@ app.notFound((c) => {
 // Para desarrollo local
 if (process.env.NODE_ENV !== 'production') {
   const port = process.env.PORT || 3001
-  logger.info(` Servidor corriendo en puerto ${port}`)
+  logger.info(`�� Servidor corriendo en puerto ${port}`)
   logger.info(`📡 API disponible en http://localhost:${port}/api`)
+  logger.info(`🔐 Auth endpoints: http://localhost:${port}/api/auth`)
   logger.info(`❤️ Health check: http://localhost:${port}/api/health`)
   
   serve({
