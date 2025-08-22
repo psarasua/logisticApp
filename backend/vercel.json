@@ -16,6 +16,11 @@
       "destination": "/index.js"
     }
   ],
+  "functions": {
+    "index.js": {
+      "maxDuration": 10
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   },
@@ -43,3 +48,4 @@
     }
   ]
 }
+
