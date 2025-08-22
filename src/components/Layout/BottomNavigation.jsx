@@ -39,7 +39,7 @@ const BottomNavigation = () => {
             to={item.path}
             className={({ isActive }) =>
               `flex-fill text-center py-2 text-decoration-none ${
-                isActive ? 'text-primary' : 'text-muted'
+                isActive ? 'text-blue-600' : 'text-muted'
               }`
             }
           >

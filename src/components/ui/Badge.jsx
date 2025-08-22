@@ -9,7 +9,7 @@ const Badge = ({ children, variant = 'default', size = 'sm', className = '', ...
     warning: 'bg-yellow-100 text-yellow-800',
     error: 'bg-red-100 text-red-800',
     info: 'bg-blue-100 text-blue-800',
-    primary: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+    blue: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
   };
   
   const sizes = {
