@@ -29,6 +29,26 @@ app.use('/*', cors({
 
 // ==================== HEALTH CHECK ENDPOINTS ====================
 
+// Endpoint raíz de la API
+app.get('/api', (c) => {
+  return c.json({ 
+    name: 'MapaClientes.uy API',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      ping: '/api/ping',
+      status: '/api/status',
+      clientes: '/api/clientes',
+      camiones: '/api/camiones',
+      rutas: '/api/rutas',
+      repartos: '/api/repartos'
+    },
+    documentation: 'https://mapaclientes.uy/docs'
+  })
+})
+
 // Ping endpoint básico
 app.get('/api/ping', (c) => {
   return c.json({ 
@@ -37,8 +57,35 @@ app.get('/api/ping', (c) => {
   })
 })
 
-// Health check completo con verificación de BD
+// Health check simple para el frontend
 app.get('/api/health', async (c) => {
+  try {
+    // Verificar conexión a base de datos
+    const result = await pool.query('SELECT NOW() as server_time')
+    
+    return c.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: {
+        status: 'connected',
+        serverTime: result.rows[0]?.server_time
+      }
+    })
+    
+  } catch (error) {
+    return c.json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      database: {
+        status: 'disconnected',
+        error: error.message
+      }
+    }, 500)
+  }
+})
+
+// Health check completo con verificación de BD
+app.get('/api/health/detailed', async (c) => {
   const startTime = Date.now()
   
   try {
@@ -169,11 +216,52 @@ app.get('/api/status', async (c) => {
 // ==================== CLIENTES ====================
 app.get('/api/clientes', async (c) => {
   try {
+    console.log('🔍 Debug: Iniciando /api/clientes')
+    
+    // Test 1: Conexión a BD
+    const testConnection = await pool.query('SELECT NOW() as tiempo')
+    console.log('✅ Conexión BD OK:', testConnection.rows[0]?.tiempo)
+    
+    // Test 2: Verificar si tabla existe
+    const tableExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'clientes'
+      ) as exists
+    `)
+    console.log('✅ Tabla clientes existe:', tableExists.rows[0]?.exists)
+    
+    if (!tableExists.rows[0]?.exists) {
+      return c.json({ 
+        message: 'Tabla clientes no existe',
+        debug: {
+          error: 'Tabla no encontrada',
+          timestamp: new Date().toISOString()
+        }
+      }, 500)
+    }
+    
+    // Test 3: Query simple
     const result = await pool.query('SELECT * FROM clientes ORDER BY nombre')
+    console.log('✅ Query exitosa, devolviendo', result.rows.length, 'registros')
+    
     return c.json(result.rows)
   } catch (error) {
-    console.error('Error obteniendo clientes:', error)
-    return c.json({ message: 'Error interno del servidor' }, 500)
+    console.error('❌ ERROR DETALLADO en /api/clientes:')
+    console.error('- Message:', error.message)
+    console.error('- Code:', error.code)
+    console.error('- Detail:', error.detail)
+    console.error('- Stack:', error.stack)
+    
+    return c.json({ 
+      message: 'Error interno del servidor',
+      debug: {
+        error: error.message,
+        code: error.code,
+        detail: error.detail,
+        timestamp: new Date().toISOString()
+      }
+    }, 500)
   }
 })
 
@@ -235,11 +323,52 @@ app.delete('/api/clientes/:id', async (c) => {
 // ==================== CAMIONES ====================
 app.get('/api/camiones', async (c) => {
   try {
+    console.log('🔍 Debug: Iniciando /api/camiones')
+    
+    // Test 1: Conexión a BD
+    const testConnection = await pool.query('SELECT NOW() as tiempo')
+    console.log('✅ Conexión BD OK:', testConnection.rows[0]?.tiempo)
+    
+    // Test 2: Verificar si tabla existe
+    const tableExists = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'camiones'
+      ) as exists
+    `)
+    console.log('✅ Tabla camiones existe:', tableExists.rows[0]?.exists)
+    
+    if (!tableExists.rows[0]?.exists) {
+      return c.json({ 
+        message: 'Tabla camiones no existe',
+        debug: {
+          error: 'Tabla no encontrada',
+          timestamp: new Date().toISOString()
+        }
+      }, 500)
+    }
+    
+    // Test 3: Query simple
     const result = await pool.query('SELECT * FROM camiones ORDER BY id')
+    console.log('✅ Query exitosa, devolviendo', result.rows.length, 'registros')
+    
     return c.json(result.rows)
   } catch (error) {
-    console.error('Error obteniendo camiones:', error)
-    return c.json({ message: 'Error interno del servidor' }, 500)
+    console.error('❌ ERROR DETALLADO en /api/camiones:')
+    console.error('- Message:', error.message)
+    console.error('- Code:', error.code)
+    console.error('- Detail:', error.detail)
+    console.error('- Stack:', error.stack)
+    
+    return c.json({ 
+      message: 'Error interno del servidor',
+      debug: {
+        error: error.message,
+        code: error.code,
+        detail: error.detail,
+        timestamp: new Date().toISOString()
+      }
+    }, 500)
   }
 })
 
@@ -328,6 +457,16 @@ app.get('/api/repartos', async (c) => {
     `)
     console.log('✅ Tabla repartos existe:', tableExists.rows[0]?.exists)
     
+    if (!tableExists.rows[0]?.exists) {
+      return c.json({ 
+        message: 'Tabla repartos no existe',
+        debug: {
+          error: 'Tabla no encontrada',
+          timestamp: new Date().toISOString()
+        }
+      }, 500)
+    }
+    
     // Test 3: Query simple
     const count = await pool.query('SELECT COUNT(*) as total FROM repartos')
     console.log('✅ Total registros:', count.rows[0]?.total)
@@ -384,12 +523,18 @@ app.onError((err, c) => {
   return c.json({ message: 'Error interno del servidor' }, 500)
 })
 
-const port = process.env.PORT || 3001
-console.log(`🚀 Servidor corriendo en puerto ${port}`)
-console.log(`📡 API disponible en http://localhost:${port}/api`)
-console.log(`❤️ Health check: http://localhost:${port}/api/health`)
+// Para desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 3001
+  console.log(`🚀 Servidor corriendo en puerto ${port}`)
+  console.log(`📡 API disponible en http://localhost:${port}/api`)
+  console.log(`❤️ Health check: http://localhost:${port}/api/health`)
+  
+  serve({
+    fetch: app.fetch,
+    port
+  })
+}
 
-serve({
-  fetch: app.fetch,
-  port
-})
+// Para Vercel
+export default app

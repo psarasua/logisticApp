@@ -51,45 +51,47 @@ api.interceptors.response.use(
   (error) => {
     // Manejo de errores global
     const message = error.response?.data?.message || error.message || 'Error de conexión'
+    const hideToast = error.config?.hideErrorToast || false
 
     // Log de errores
     console.error(`❌ ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, message)
 
-    // Manejo específico por código de estado
-    switch (error.response?.status) {
-      case 401:
-        // Token expirado o no válido
-        localStorage.removeItem('auth-storage')
-        toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
-        window.location.href = '/login'
-        break
+    // Solo mostrar toast si no está desactivado
+    if (!hideToast) {
+      // Manejo específico por código de estado
+      switch (error.response?.status) {
+        case 401:
+          // Token expirado o no válido
+          localStorage.removeItem('auth-storage')
+          toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+          window.location.href = '/login'
+          break
 
-      case 403:
-        toast.error('No tienes permisos para realizar esta acción')
-        break
+        case 403:
+          toast.error('No tienes permisos para realizar esta acción')
+          break
 
-      case 404:
-        toast.error('Recurso no encontrado')
-        break
+        case 404:
+          toast.error('Recurso no encontrado')
+          break
 
-      case 422:
-        // Errores de validación
-        if (error.response.data?.errors) {
-          const errors = Object.values(error.response.data.errors).flat()
-          errors.forEach(err => toast.error(err))
-        } else {
+        case 422:
+          // Errores de validación
+          if (error.response.data?.errors) {
+            const errors = Object.values(error.response.data.errors).flat()
+            errors.forEach(err => toast.error(err))
+          } else {
+            toast.error(message)
+          }
+          break
+
+        case 500:
+          toast.error('Error interno del servidor. Intenta más tarde.')
+          break
+
+        default:
           toast.error(message)
-        }
-        break
-
-      case 500:
-        toast.error('Error interno del servidor. Intenta más tarde.')
-        break
-
-      default:
-        if (!error.config?.hideErrorToast) {
-          toast.error(message)
-        }
+      }
     }
 
     return Promise.reject(error)
@@ -195,17 +197,57 @@ export const uploadFile = async (url, file, onProgress) => {
 export const cancelToken = axios.CancelToken
 export const isCancel = axios.isCancel
 
-// Health check para verificar conexión con el backend
+// Health check para verificar conexión con el backend (completamente silencioso)
 export const healthCheck = async () => {
   try {
-    const response = await api.get('/health', {
-      hideErrorToast: true,
-      timeout: 5000
+    // Crear una instancia de axios completamente limpia para health checks
+    const healthCheckAxios = axios.create({
+      baseURL: import.meta.env.VITE_API_URL || '/api',
+      timeout: 5000,
+      validateStatus: () => true // Aceptar cualquier status code
     })
-    return response.data
+    
+    const response = await healthCheckAxios.get('/health')
+    
+    if (response.status === 200) {
+      return response.data
+    } else {
+      return { 
+        status: 'error', 
+        message: `HTTP ${response.status}: ${response.data?.message || 'Error del servidor'}`,
+        code: response.status,
+        details: response.data
+      }
+    }
   } catch (error) {
+    // Solo log en consola, sin toast
     console.warn('Backend health check failed:', error.message)
-    return { status: 'error', message: error.message }
+    
+    // Determinar el tipo de error
+    let errorType = 'NETWORK_ERROR'
+    let errorMessage = error.message
+    
+    if (error.code === 'ECONNABORTED') {
+      errorType = 'TIMEOUT'
+      errorMessage = 'Timeout de conexión'
+    } else if (error.code === 'ERR_NETWORK') {
+      errorType = 'NETWORK_ERROR'
+      errorMessage = 'Error de red - servidor no disponible'
+    } else if (error.response) {
+      errorType = `HTTP_${error.response.status}`
+      errorMessage = `Error ${error.response.status}: ${error.response.data?.message || 'Error del servidor'}`
+    }
+    
+    return { 
+      status: 'error', 
+      message: errorMessage,
+      code: errorType,
+      details: {
+        type: error.name,
+        originalMessage: error.message,
+        code: error.code
+      }
+    }
   }
 }
 
