@@ -213,5 +213,19 @@ app.notFound((c) => {
   }, 404)
 })
 
-// Exportar para Vercel
+// Al final de tu index.js, antes del export
+if (process.env.NODE_ENV !== 'production') {
+  const { serve } = require('@hono/node-server')
+  const port = process.env.PORT || 3001
+  
+  console.log(`🚀 Servidor local iniciando en puerto ${port}...`)
+  
+  serve({
+    fetch: app.fetch,
+    port: port
+  })
+  
+  console.log(`✅ Servidor local corriendo en http://localhost:${port}`)
+}
+
 export default handle(app)
